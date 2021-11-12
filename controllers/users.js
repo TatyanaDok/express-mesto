@@ -1,77 +1,75 @@
 const User = require("../models/user");
+const ValidationError = require("../errors/validationError");
+const NotFoundError = require("../errors/notFoundErr");
 
-module.exports.getUsers = (req, res) => {
-  const ERROR_CODE = 404;
-
+module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send({ users }))
-    .catch(() =>
-      res
-        .status(ERROR_CODE)
-        .send({ message: "Произошла ошибка, не удалось найти пользователей" })
-    );
+    .then((users) => res.send(users))
+    .catch(next);
 };
 
-module.exports.getUserId = (req, res) => {
-  const ERROR_CODE = 404;
-
+module.exports.getUserId = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
-      if (user) {
-        res.send({ user });
-      } else {
-        res.status(ERROR_CODE).send({ message: "Нет пользователя с таким id" });
+      if (!user) {
+        throw new NotFoundError("Запрашиваемый пользователь не найден");
       }
+
+      res.status(200).send({ data: user });
     })
-    .catch(() =>
-      res.status(ERROR_CODE).send({ message: "Неверный id пользователя" })
-    );
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
-  const ERROR_CODE = 400;
 
   User.create({ name, about, avatar })
-    // вернём записанные в базу данные
     .then((user) => {
-      res.send({ data: user });
+      if (!user) {
+        throw new ValidationError("Переданы некорректные данные");
+      }
+
+      return res.send(user);
     })
-    .catch(() =>
-      res
-        .status(ERROR_CODE)
-        .send({ message: "Произошла ошибка, не удалось создать карточку" })
-    );
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  const ERROR_CODE = 400;
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
     .then((user) => {
-      if (user) {
-        res.status(200).send({ data: user });
-      } else {
-        res.status(ERROR_CODE).send({ message: "Нет пользователя с таким id" });
+      if (!user) {
+        throw new ValidationError("Переданы некорректные данные");
       }
+
+      res.send(user);
     })
-    .catch(() =>
-      res.status(ERROR_CODE).send({ message: "Переданы не корректные данные" })
-    );
+    .catch(next);
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
-  const ERROR_CODE = 400;
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
     .then((user) => {
-      if (user) {
-        res.status(200).send({ data: user });
-      } else {
-        res.status(ERROR_CODE).send({ message: "Нет пользователя с таким id" });
+      if (!user) {
+        throw new ValidationError("Переданы некорректные данные");
       }
+
+      res.send(user);
     })
-    .catch(() =>
-      res.status(ERROR_CODE).send({ message: "Переданы не корректные данные" })
-    );
+    .catch(next);
 };

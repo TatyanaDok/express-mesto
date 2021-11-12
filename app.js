@@ -6,7 +6,7 @@ const users = require("./routes/users");
 // импортируем роутер карточек
 const cards = require("./routes/cards");
 // Слушаем 3000 порт
-const { PORT = 3000, BASE__PATH = "http://localhost:3000/" } = process.env;
+const { PORT = 3000 } = process.env;
 
 const app = express();
 
@@ -18,7 +18,7 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
 
 app.use((req, res, next) => {
   req.user = {
-    _id: "618cd9ecebef9b0137c53c3a", // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: "618e477655b926ad47a0033c", // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
 
   next();
@@ -34,10 +34,4 @@ app.use("*", (req, res) => {
   res.status(ERROR_CODE).send({ message: "Запрашиваемый ресурс не найден" });
 });
 
-app.listen(PORT, () => {
-  // Если всё работает, консоль покажет, какой порт приложение слушает
-  // eslint-disable-next-line no-console
-  console.log(`App listening on port ${PORT}`);
-  // eslint-disable-next-line no-console
-  console.log(`Link to the server ${BASE__PATH}`);
-});
+app.listen(PORT);
