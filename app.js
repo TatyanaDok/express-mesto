@@ -18,7 +18,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '618d26e5ead8439f9dae4f85', // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '61910117b689aaacc6ed92e', // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
 
   next();
@@ -35,3 +35,12 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT);
+/* "body": {
+  "name": "tututut",
+  "link": "nbnbnbnb",
+  "owner": "618d26e5ead8439f9dae4f85",
+  "likes": [],
+  "_id": "61910117b689aaacc6ed92e3",
+  "createdAt": "2021-11-14T12:29:11.870Z",
+  "__v": 0
+} */
