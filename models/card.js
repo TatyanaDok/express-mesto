@@ -1,31 +1,40 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 30,
+    required: [true, 'Поле "name" обязательно'],
+    minlength: [2, 'Минимальная длина поля "name" - 2'],
+    maxlength: [30, 'Максимальная длина поля "name" - 30'],
   },
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(v) {
+        return validator.isURL(v);
+      },
+      message: 'Строка должна содержать ссылку!',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
     ref: 'user',
+    required: true,
   },
-  likes: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      default: [],
-      ref: 'user',
-    },
-  ],
+  likes: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+      },
+    ],
+    default: [],
+  },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now(),
   },
 });
 
