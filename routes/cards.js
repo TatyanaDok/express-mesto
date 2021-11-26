@@ -1,10 +1,6 @@
+/* eslint-disable comma-dangle */
 const router = require('express').Router();
-const {
-  createCardValidation,
-  deleteCardValidation,
-  changeCardLikeStatusValidation,
-} = require('../middlewares/celebrate');
-
+const { validateCard, validateId } = require('../middlewares/celebrate');
 const {
   getCards,
   createCard,
@@ -13,9 +9,10 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-router.get('/', getCards);
-router.post('/', createCardValidation, createCard);
-router.delete('/cardId', deleteCardValidation, removeCard);
-router.put('/likes', changeCardLikeStatusValidation, likeCard);
-router.delete('/likes', changeCardLikeStatusValidation, dislikeCard);
+router.get('/cards', getCards);
+router.post('/cards', validateCard, createCard);
+router.delete('/cards/:_id', validateId, removeCard);
+router.put('/cards/:_id/likes', validateId, likeCard);
+router.delete('/cards/:_id/likes', validateId, dislikeCard);
+
 module.exports = router;

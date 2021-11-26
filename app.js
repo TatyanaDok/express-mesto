@@ -10,10 +10,7 @@ const users = require('./routes/users');
 const cards = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
-const {
-  createUserValidation,
-  loginValidation,
-} = require('./middlewares/celebrate');
+const { validateUser, validateLogin } = require('./middlewares/celebrate');
 const NotFoundError = require('./errors/notFoundErr');
 
 const { PORT = 3000 } = process.env;
@@ -36,34 +33,27 @@ app.get('/crash-test', () => {
 
 app.use(cors());
 
-app.post('/signin', loginValidation, login);
-app.post('/signup', createUserValidation, createUser);
-app.use(auth);
-app.use('/users', users);
-app.use('/cards', cards);
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateUser, createUser);
 
-app.get('*', () => {
-  try {
-    throw new NotFoundError('Запрашиваемый ресурс не найден');
-  } catch (err) {
-    throw new NotFoundError('Запрашиваемый ресурс не найден');
-  }
+app.use('/', auth, users);
+app.use('/', auth, cards);
+
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Страница не найдена'));
 });
 
 app.use(errors());
 
 app.use((err, req, res, next) => {
-  const { statusCode, message } = err;
-
-  if (statusCode) {
-    return res.status(statusCode).send({ message });
+  if (err.status) {
+    res.status(err.status).send(err.message);
+    return;
   }
-
-  return next();
-});
-
-app.use((req, res) => {
-  res.status(500).send({ message: 'На сервере произошла ошибка' });
+  res
+    .status(500)
+    .send({ message: `На сервере произошла ошибка: ${err.message}` });
+  next();
 });
 
 app.listen(PORT, () => {
