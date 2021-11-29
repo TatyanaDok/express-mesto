@@ -4,7 +4,7 @@ const { celebrate, Joi, CelebrateError } = require('celebrate');
 const validator = require('validator');
 
 const urlValidation = (value) => {
-  if (!validator.isURL(value)) {
+  if (!validator.isURL(value, { require_protocol: true })) {
     throw new CelebrateError('Некорректный URL');
   }
   return value;
@@ -19,7 +19,7 @@ const validateCard = celebrate({
 
 const validateId = celebrate({
   params: Joi.object().keys({
-    _id: Joi.string(),
+    _id: Joi.string().alphanum().required().length(24).hex(),
   }),
 });
 

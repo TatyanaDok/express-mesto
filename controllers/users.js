@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 const { NODE_ENV, JWT_SECRET } = process.env;
 const User = require('../models/user');
 const NotFoundError = require('../errors/notFoundErr');
-const BadRequestError = require('../errors/badRequestErr');
 const UnauthorizedError = require('../errors/unauthorizedErr');
+const ConflictError = require('../errors/conflictError');
 
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
@@ -15,7 +15,7 @@ module.exports.createUser = (req, res, next) => {
   User.findOne({ email })
     .then((existedUser) => {
       if (existedUser) {
-        throw new BadRequestError('Пользователь с таким email уже существует');
+        throw new ConflictError('Пользователь с таким email уже существует');
       }
 
       bcrypt.hash(password, 10).then((hash) => {
@@ -67,7 +67,7 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUserId = (req, res, next) => {
-  User.findById(req.user._id)
+  User.findById(req.params._id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Нет пользователя с таким id');
@@ -77,7 +77,6 @@ module.exports.getUserId = (req, res, next) => {
     })
     .catch(next);
 };
-
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
