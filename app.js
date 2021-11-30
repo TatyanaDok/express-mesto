@@ -11,6 +11,7 @@ const cards = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
 const { validateUser, validateLogin } = require('./middlewares/celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/notFoundErr');
 
 const { PORT = 3000 } = process.env;
@@ -24,7 +25,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(requestLogger);
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
@@ -42,7 +43,7 @@ app.use('/', auth, cards);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Страница не найдена'));
 });
-
+app.use(errorLogger);
 app.use(errors());
 
 app.use((err, req, res, next) => {
