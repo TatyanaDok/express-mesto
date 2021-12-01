@@ -118,3 +118,8 @@ module.exports.updateProfile = (req, res, next) => {
     })
     .catch(next);
 };
+module.exports.signout = (req, res) => {
+  res
+    .clearCookie('jwt', { httpOnly: true, sameSite: true })
+    .send({ message: 'Signed Out' });
+};

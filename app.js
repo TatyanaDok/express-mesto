@@ -6,10 +6,11 @@ const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
+const { corsConfig } = require('./middlewares/cors');
 const users = require('./routes/users');
 const cards = require('./routes/cards');
 const auth = require('./middlewares/auth');
-const { createUser, login } = require('./controllers/users');
+const { createUser, login, signout } = require('./controllers/users');
 const { validateUser, validateLogin } = require('./middlewares/celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/notFoundErr');
@@ -32,13 +33,20 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-app.use(cors());
+app.use('*', cors(corsConfig));
 
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 app.post('/signin', validateLogin, login);
 app.post('/signup', validateUser, createUser);
 
 app.use('/', auth, users);
 app.use('/', auth, cards);
+
+app.get('/signout', signout);
 
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Страница не найдена'));
