@@ -2,6 +2,7 @@
 /* eslint-disable object-curly-newline */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const BadRequestError = require('../errors/badRequestErr');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 const User = require('../models/user');
@@ -18,21 +19,25 @@ module.exports.createUser = (req, res, next) => {
         throw new ConflictError('Пользователь с таким email уже существует');
       }
 
-      bcrypt.hash(password, 10).then((hash) => {
-        User.create({
-          name,
-          about,
-          avatar,
-          email,
-          password: hash,
+      bcrypt
+        .hash(password, 10)
+        .then((hash) => {
+          User.create({
+            name,
+            about,
+            avatar,
+            email,
+            password: hash,
+          });
+        })
+        .then((createdUser) => {
+          if (!createdUser) {
+            throw new BadRequestError('Переданы некорректные данные');
+          }
+
+          User.findOne({ email }).then((user) => res.send(user));
         });
-      });
-
-      User.findOne({ email }).then(() => {
-        res.send({ message: 'Успешная регистрация' });
-      });
     })
-
     .catch(next);
 };
 
