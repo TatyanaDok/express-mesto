@@ -128,3 +128,8 @@ module.exports.signout = (req, res) => {
     .clearCookie('jwt', { httpOnly: true, sameSite: true })
     .send({ message: 'Signed Out' });
 };
+module.exports.getCurrentUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => res.send(user))
+    .catch(next);
+};
