@@ -1,8 +1,9 @@
+/* eslint-disable function-paren-newline */
+/* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable comma-dangle */
 /* eslint-disable object-curly-newline */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const BadRequestError = require('../errors/badRequestErr');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 const User = require('../models/user');
@@ -13,31 +14,33 @@ const ConflictError = require('../errors/conflictError');
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
 
-  User.findOne({ email })
-    .then((existedUser) => {
-      if (existedUser) {
-        throw new ConflictError('Пользователь с таким email уже существует');
-      }
-
-      bcrypt
-        .hash(password, 10)
-        .then((hash) => {
-          User.create({
-            name,
-            about,
-            avatar,
-            email,
-            password: hash,
-          });
-        })
-        .then((createdUser) => {
-          if (!createdUser) {
-            throw new BadRequestError('Переданы некорректные данные');
-          }
-
-          User.findOne({ email }).then((user) => res.send(user));
-        });
+  bcrypt
+    .hash(password, 10)
+    .then((hash) =>
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      })
+    )
+    .catch((err) => {
+      if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictError(
+          'Пользователь с таким email уже зарегистрирован'
+        );
+      } else next(err);
     })
+    .then((user) =>
+      res.send({
+        email: user.email,
+        about: user.about,
+        name: user.name,
+        avatar: user.avatar,
+        _id: user._id,
+      })
+    )
     .catch(next);
 };
 
